@@ -14,10 +14,15 @@
 # limitations under the License.
 ########################################################################
 
-The agileTriggers application is made up of 3 key components both driven 
-via Crontab. 
+The agileTriggers application is made up of 4 key components 3 driven 
+via Crontab and a fourth web application. 
 
-The agileTriggers component uses REST API calls to get data from Octopus energy
+The web application 
+Is a flask based web application to show daily agile data (cost per Kw/h per
+half hour period after these are released by Ocotpus daily, as well as 24 hours after 
+the day is complete the measured usage in Kw/h in each period. 
+
+The getrates component uses REST API calls to get data from Octopus energy
 about forward pricing for it's Agile Tarriff.  This data is stored in a 
 Sqlite database The pricing component is updated daily, the program runs under 
 crontab to  get the data.
@@ -29,3 +34,32 @@ slots loaded.
 The checktriggers component runs every half hour on the hour and half hour as 
 driven by crontab. The list of triggers is stored in the same database as 
 agileTriggers & getUsage. The triggers are managed via the triggers utility. 
+
+These 4 tools use the agile.py triggers.py config.py and logger.py modules
+nd  sqlite3 database.
+
+agile.py drives the database and makes REST API calls to Octopus
+
+triggers.py drives the database and manages the trigger files
+
+config.py processes the .agiletriggers.ini file in the use home directory. This
+file holds configuration variables for the suite of tools. 
+
+logger.py uses python logger to log tracing to  set of logifles for debug information if 
+the debug is turned on in the config file
+
+TO DO:
+
+1) write a trigger handler - this will probably be something to call ardevd's jlrpy library 
+   to turn on and off my ipace charging based on agile triggers. Either that or something to 
+   manage meross smartplugs.
+  
+2) Show/edit the triggers in the web app.
+
+3) Put some security on the app.
+
+4) Tidy up the web app - the web pages are fairly basic at the moment. 
+
+5) improve the graphing - get previous months, daily graphs etc.
+
+6) write some ore user info. 
