@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+  {% block content %}
+
+  <h1>{% block title %} {{titlestring}} {% endblock %}</h1>
+
+  <h1>Daily Electricity Usage is {{daily_total}}</h1>
+
+  <table class="center">
+    <tr>
+      <td><a href="/{{prev}}/data">previous</a></td>
+      <td></td>
+      <td><a href="/{{next}}/data">next</a></td>
+    </tr>
+  </table>
+ 
+  <table class="center" id="t01">
+     <tr>
+         <th><b>date and time</b></th> 
+         <th><b>cost per unit</b></th>
+         <th><b>units</b></th>
+         <th><b>period cost</b></th>
+     </tr>
+  {% for period in octopus_data %}
+     <tr>
+         <td id="{{period[4]}}">{{ period[0] }}</td>
+         <td id="{{period[4]}}">{{ period[1] }}</td>
+         <td id="{{period[4]}}">{{ period[2] }}</td>
+         <td id="{{period[4]}}">{{ period[3] }}</td>
+     </tr>
+  {% endfor %}
+
+  </table>
+{% endblock %}
+</body>

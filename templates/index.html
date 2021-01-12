@@ -1,0 +1,44 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+     <h1>{% block title %} Welcome to {{app_site_name}} Agile Tracker{% endblock %} </h1>
+
+     <table class="center">
+          <tr>
+               <td> Select Year</td>
+               <td> Select Month</td>
+               <td> Select Day</td>
+          </tr>
+          <tr>
+               <form class="dateSelection" method="POST" action="/root_form">
+               <td>
+                    <select name="year_dropdown" method="GET" action="/">
+                         {% for year in year_list %}
+                         <option value= "{{year}}" >{{year}}</option>"
+                         {% endfor %}
+                     </select>
+               </td>
+               <td>
+                    <select name="month_dropdown" method="GET" action="/">
+                         {% for month in month_list %}
+                         <option value= "{{month}}" >{{month}}</option>"
+                         {% endfor %}
+                     </select>
+               </td>
+               <td><select name="day_dropdown" method="GET" action="/">
+                    {% for day in day_list %}
+                    <option value= "{{day}}" >{{day}}</option>"
+                    {% endfor %}
+                </select></td>
+                <td>
+                    <input class="btn" type="submit" value="submit">
+                </td>
+               </form>
+          </tr>
+          <tr>
+               <td colspan="4">
+                    <img src="{{year}}-{{month}}-{{day}}/plot.png" alt="my plot">
+               </td>
+          </tr>
+     </table>
+{% endblock %}

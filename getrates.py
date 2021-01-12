@@ -51,7 +51,7 @@ my_account=OctopusAgile( config, log)
 
 log.debug("in getRates.py post agile init")
 
-rates = my_account.get_current_rates()
+rates = my_account.get_latest_rates()
 
 log.debug("in getRates.py post get_rates")
 

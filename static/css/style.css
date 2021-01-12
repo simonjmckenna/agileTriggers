@@ -1,0 +1,54 @@
+h1 {
+    border: 2px #eee solid;
+    color: brown;
+    text-align: center;
+    font-size:large;
+    padding: 10px;
+}
+
+
+#extreme {
+     color: white;
+     background-color: red;
+}
+
+#high {
+     color: black;
+     background-color: orange;
+}
+
+#average {
+    color: black;
+    background-color: yellowgreen;
+}
+#good {
+    color: black;
+    background-color: green;
+}
+
+#default {
+    color: white;
+    background-color: darkblue;
+}
+
+#t01 tr:nth-child(even) {
+    background-color: #eee;
+    font-size: small;
+  }
+  
+#t01 tr:nth-child(odd) {
+   background-color: #fff;
+   font-size: small;
+  }
+  
+#t01 th {
+    background-color: red;
+    color: white;
+    padding: 15px;
+    text-align: left;
+}
+
+.center {
+    margin-left: auto;
+    margin-right: auto;
+  }

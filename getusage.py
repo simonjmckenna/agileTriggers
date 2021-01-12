@@ -28,7 +28,7 @@ from agile import OctopusAgile
 from mylogger import mylogger
 from config import configFile, buildFilePath
 from datetime import datetime
-
+import sys
 ############################################################################
 #  setup config
 ############################################################################
@@ -58,9 +58,10 @@ log.debug("STARTED getUsage ")
 my_account=OctopusAgile(config,log)
 
 f_periodno = my_account.find_first_period_usage()
-t_periodno = my_account.gen_periodno_date(datetime.utcnow())-48
+t_periodno = my_account.gen_periodno_date(datetime.utcnow())-24
 
-if t_periodno < f_periodno:
+log.debug(f"f_periodno = {f_periodno} t_periodno={t_periodno}")
+if t_periodno > f_periodno:
     from_date = my_account.date_from_periodno(f_periodno)
     to_date = my_account.date_from_periodno(t_periodno)
 
