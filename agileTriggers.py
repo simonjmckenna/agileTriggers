@@ -22,7 +22,9 @@
 ########################################################################
 
 from config import configFile
-import sqlite3
+from agileDB import OctopusAgileDB
+from mylogger import nulLogger, mylogger
+from sqliteDB import sqliteDB
 import sys
 import os
 
@@ -30,6 +32,7 @@ class costTriggers:
     triggers = None
     database      = None
     triggerFolder = None
+    dbobject       = None
 
 ##############################################################################
 #  __init__ class init for costTriggers class 
@@ -42,6 +45,11 @@ class costTriggers:
         self.log.debug("STARTED __init__")
 
         self.__set_config(theConfig)
+
+        if self.database == None :
+            self.log.error("no database file path registered")
+        else:
+            self.dbobject = sqliteDB(self.database, theLogger)
 
         self.log.debug("FINISHED __init__ ")
 
@@ -67,25 +75,28 @@ class costTriggers:
 #  initialise_trigger_db - create a new trigger database  run this once
 ##############################################################################
     def initialise_trigger_db(self):
+        data = False
+        result = False
         self.log.debug("STARTED initialise_trigger_db ")
-        try:
-            sqliteConnection = sqlite3.connect(self.database)
-            cursor = sqliteConnection.cursor()
+        if self.dbobject.db_ready() == True:
+            if self.dbobject.db_connect() == True:
 
-            # create the agile_triggers table 
-            # containing a trigger_name
-            #            a trigger cost, 
-            #            a the trigger file
-            self.log.debug("creating agile_triggers table")
-            cursor.execute('CREATE TABLE agile_triggers (trigger_name TEXT PRIMARY KEY, cost REAL )')
+                # create the agile_triggers table 
+                # containing a trigger_name
+                #            a trigger cost, 
+                #            a the trigger file
+                self.log.debug("creating agile_triggers table")
+                sqlite_query = 'CREATE TABLE agile_triggers (trigger_name TEXT PRIMARY KEY, cost REAL )'
+                if self.dbobject.db_query(sqlite_query) == True:
+                    data = True
+                    self.log.debug("Created agile_triggers table")
+   
+                if data == True:
+                    result = True
 
-        except sqlite3.Error as error:
-            print("Failed to create agile_triggers table", error)
-        finally:
-            if (sqliteConnection):
-                sqliteConnection.close()
-                self.log.debug("The SQLite connection is closed")
-
+                self.dbobject.db_disconnect()
+            else:
+                self.log.debug("Failed to connect to agileDB agile_triggers table")
         self.log.debug("FINISHED initialise_trigger_db ")
 
 ##############################################################################
@@ -125,25 +136,27 @@ class costTriggers:
 #   get_all_triggers -  get the list of triggers
 ##############################################################################
     def get_all_triggers(self):
+        triggers = None
         self.log.debug("STARTED get_all_triggers ")
-        try:
-            sqliteConnection = sqlite3.connect(self.database)
-            cursor = sqliteConnection.cursor()
-            self.log.debug("Connected to SQLite [" + self.database + "].")
 
-            sqlite_select_query = """SELECT trigger_name,cost FROM agile_triggers """
+        if self.dbobject.db_ready() == True:
+            if self.dbobject.db_connect() == True:
 
-            count = cursor.execute(sqlite_select_query)
-            triggers=cursor.fetchall()
-            self.log.debug(f"get_all_triggers returned {count} triggers")
-            cursor.close()
+                self.log.debug(f"Connected to SQLite [{self.database}]")
+                sqlite_select_query = """SELECT trigger_name,cost FROM agile_triggers """
 
-        except sqlite3.Error as error:
-            self.log.error(f"Failed to query data in agile_triggers table:{error}")
-        finally:
-            if (sqliteConnection):
-                sqliteConnection.close()
-                self.log.debug("The SQLite connection is closed")
+                if self.dbobject.db_query(sqlite_select_query) == True:
+
+                    # the triggers tabel is returned from the query
+                    triggers =self.dbobject.db_queryresults()
+                    self.log.debug(f"Got Triggers")
+                    got_triggers = True   
+                else:
+                    self.log.error("Failed to Get Triggers")
+
+                self.dbobject.db_disconnect()
+            else:
+                self.log.error(f"Failed to connect to  agile_triggers ")
 
         self.log.debug("FINISHED get_all_triggers ")
 
@@ -155,27 +168,25 @@ class costTriggers:
     def add_new_trigger(self,trigger_name,cost):
         result = False
         self.log.debug("STARTED add_new_trigger ")
-        try:
-            sqliteConnection = sqlite3.connect(self.database)
-            cursor = sqliteConnection.cursor()
-            self.log.debug("Connected to SQLite [" + self.database + "].")
 
-            sqlite_insert_query = """INSERT INTO agile_triggers ('trigger_name','cost') VALUES (?,?); """
-            data_tuple = (trigger_name,cost)
+        if self.dbobject.db_ready() == True:
+            if self.dbobject.db_connect() == True:
 
-            cursor.execute(sqlite_insert_query,data_tuple)
-            sqliteConnection.commit()
-            result = True
+                self.log.debug(f"Connected to SQLite [{self.database}]")
 
-            self.log.debug(f"result={result}")
-            cursor.close()
+                sqlite_insert_query = """INSERT INTO agile_triggers ('trigger_name','cost') VALUES (?,?); """
+                data_tuple = (trigger_name,cost)
 
-        except sqlite3.Error as error:
-            self.log.error(f"Failed to insert data in agile_triggers table, {error}")
-        finally:
-            if (sqliteConnection):
-                sqliteConnection.close()
-                self.log.debug("The SQLite connection is closed")
+                if self.dbobject.db_query(sqlite_insert_query,data_tuple) == True:
+                    result = True
+                    self.log.debug(f"trigger data inserted")
+                else:
+                    self.log.error("Failed to insert Trigger")
+
+                self.dbobject.db_disconnect()
+            else:
+                self.log.error(f"Failed to connect to  agile_triggers ")
+
 
         self.log.debug("FINISHED add_new_trigger ")
 
@@ -187,27 +198,23 @@ class costTriggers:
     def update_trigger(self,trigger_name,cost):
         result = False
         self.log.debug("STARTED update_trigger ")
-        try:
-            sqliteConnection = sqlite3.connect(self.database)
-            cursor = sqliteConnection.cursor()
-            self.log.debug("Connected to SQLite [" + self.database + "].")
 
-            sqlite_update_query = """UPDATE agile_triggers SET cost = ? WHERE trigger_name = ? """
-            data_tuple = (cost, trigger_name)
+        if self.dbobject.db_ready() == True:
+            if self.dbobject.db_connect() == True:
 
-            cursor.execute(sqlite_update_query,data_tuple)
-            sqliteConnection.commit()
-            result = True
+                self.log.debug(f"Connected to SQLite [{self.database}]")
 
-            self.log.debug(f"result={result}")
-            cursor.close()
+                sqlite_update_query = """UPDATE agile_triggers SET cost = ? WHERE trigger_name = ? """
+                data_tuple = (cost, trigger_name)
+                if self.dbobject.db_query(sqlite_update_query,data_tuple) == True:
+                    result = True
+                    self.log.debug(f"trigger [{trigger_name}] data updated")
+                else:
+                    self.log.error(f"Failed to update Trigger [{trigger_name}] ")
 
-        except sqlite3.Error as error:
-            self.log.error(f"Failed to insert data in agile_triggers table, {error}")
-        finally:
-            if (sqliteConnection):
-                sqliteConnection.close()
-                self.log.debug("The SQLite connection is closed")
+                self.dbobject.db_disconnect()
+            else:
+                self.log.error(f"Failed to connect to  agile_triggers ")
 
         self.log.debug("FINISHED update_trigger ")
           
@@ -219,26 +226,22 @@ class costTriggers:
     def del_trigger(self,trigger_name):
         result = False
         self.log.debug("STARTED delete_trigger ")
-        try:
-            sqliteConnection = sqlite3.connect(self.database)
-            cursor = sqliteConnection.cursor()
-            self.log.debug("Connected to SQLite [" + self.database + "].")
+        if self.dbobject.db_ready() == True:
+            if self.dbobject.db_connect() == True:
 
-            sqlite_delete_query = 'DELETE FROM agile_triggers WHERE trigger_name=?'
-            cursor.execute(sqlite_delete_query,(trigger_name,))
-            sqliteConnection.commit()
+                self.log.debug(f"Connected to SQLite [{self.database}]")
 
-            result=True
+                sqlite_delete_query = 'DELETE FROM agile_triggers WHERE trigger_name=?'
 
-            cursor.close()
+                if self.dbobject.db_query(sqlite_delete_query,(trigger_name,)) == True:
+                    result = True
+                    self.log.debug(f"trigger [{trigger_name}] deleted")
+                else:
+                    self.log.error(f"Failed to delete Trigger [{trigger_name}] ")
 
-        except sqlite3.Error as error:
-            self.log.error(f"Failed to delete data in agile_triggers table, {error}")
-            result = False
-        finally:
-            if (sqliteConnection):
-                sqliteConnection.close()
-                self.log.debug("The SQLite connection is closed")
+                self.dbobject.db_disconnect()
+            else:
+                self.log.error(f"Failed to connect to  agile_triggers ")
 
         self.log.debug("FINISHED delete_trigger ")
 

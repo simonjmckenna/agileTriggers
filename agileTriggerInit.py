@@ -19,7 +19,7 @@
 # limitations under the License.
 ########################################################################
 
-from agile import OctopusAgile
+from agileDB import OctopusAgileAB, OctopusAgileDB
 from config import configFile,buildFilePath
 from crontab import CronTab
 from mylogger import mylogger
@@ -53,14 +53,24 @@ log = mylogger("agileTriggerInit",logFile,True)
 ############################################################################
 log.info("STARTED agileTriggerInit.py")
 log.info("init Agile object")
-my_account= OctopusAgile(config,log)
+ratetime=None
+
+ratetine==config.read_value('settings','new_rate_time')
+if ratetime == None:
+    print ("no new_rate_tyime set in config assuming 16:15")
+    cron_hour =16
+    cron_minute = 15
+
+my_account= OctopusAgileDB(config,log)
 
 # cron vairiables
 cron_comment="added by agileTriggerInit"
-cron_command="/usr/bin/python3 "+binPath+"/getrates.py 2>&1 > "+logPath+"/cron.log"
+cron_command="/usr/bin/python3 "+binPath+"/getrates.py -L 2>&1 > "+logPath+"/cron.log"
 
 log.info("init Agile database")
 my_account.initialise_agile_db()
+
+sys.exit()
 
 log.info("init crontab entry to refresh database")
 my_cron = CronTab(user=True)
@@ -79,9 +89,12 @@ for job in my_jobs:
 # create new job Octopus publishes prices @16:05 daily
 log.info("creating new crontab entry")
 my_job = my_cron.new(command=cron_command)
-my_job.minute.on(15)
-my_job.hour.on(16)
+my_job.minute.on(cron_minute)
+my_job.hour.on(cron_hour)
 my_job.set_comment(cron_comment)
+
+cron_comment="added by agileTriggerInit"
+cron_command="/usr/bin/python3 "+binPath+"/getusage.py 2>&1 > "+logPath+"/cron.log"
 
 log.info("updating cron entry settings")
 my_cron.write_to_user(user=True)

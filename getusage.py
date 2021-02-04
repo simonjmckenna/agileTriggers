@@ -24,11 +24,46 @@
 # limitations under the License.
 ########################################################################
 
-from agile import OctopusAgile
+from agileDB import OctopusAgileDB
+from agileAPI import OctopusAgileAPI
+from agileTools import gen_periodno_date, date_from_periodno
 from mylogger import mylogger
 from config import configFile, buildFilePath
 from datetime import datetime
 import sys
+
+log = None
+
+##############################################################################
+#  load_usage_data - load the usage data into the database
+##############################################################################
+def load_usage_data(agileDB, usage_data):
+    record = 0
+    result = None
+
+    log.debug("STARTED load_usage_data ")
+    if agileDB.connect_agile_db() == True:
+
+        for result in usage_data:
+            usage = result['consumption']
+            raw_from = result['interval_start']
+
+            # We need to reformat the date to a python date from a json date
+            date = datetime.strptime(raw_from, "%Y-%m-%dT%H:%M:%SZ")
+            log.debug( f"Record {record:05d} YY:{date.year:4d} MM:{date.month:02d} DD:{date.day:02d} hh:{date.hour:02d} mm:{date.minute:02d} USAGE:{usage}")
+        
+            agileDB.update_db_period_usage (date.year, date.month, date.day, date.hour, date.minute, usage, True)
+            # increment the number of records
+            record += 1
+
+    log.debug(f" completed all loads record {record}")
+    result =  record
+    agileDB.disconnect_agile_db()
+    
+    log.debug("FINISHED load_usage_data ")
+    return result
+
+
 ############################################################################
 #  setup config
 ############################################################################
@@ -55,18 +90,22 @@ log = mylogger("getUsage",logFile,True)
 
 log.debug("STARTED getUsage ")
 
-my_account=OctopusAgile(config,log)
+my_account= OctopusAgileAPI(config,log)
+my_database = OctopusAgileDB (config, log)
 
-f_periodno = my_account.find_first_period_usage()
-t_periodno = my_account.gen_periodno_date(datetime.utcnow())-24
+f_periodno = my_database.get_db_first_missing_usage()
+t_periodno = gen_periodno_date(datetime.utcnow())-24
 
 log.debug(f"f_periodno = {f_periodno} t_periodno={t_periodno}")
-if t_periodno > f_periodno:
-    from_date = my_account.date_from_periodno(f_periodno)
-    to_date = my_account.date_from_periodno(t_periodno)
 
+if t_periodno > f_periodno:
+    from_date = date_from_periodno(f_periodno)
+    to_date = date_from_periodno(t_periodno)
+
+    # Query the data from Octopus 
     usagedata = my_account.get_usage(from_date, to_date)
-    usagedata = my_account.load_usage_data(usagedata)
+    # Load it into the database
+    load_usage_data(my_database, usagedata)
 else:
     log.info("No outstanding usage data to upload")
 

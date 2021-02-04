@@ -35,18 +35,27 @@ The checktriggers component runs every half hour on the hour and half hour as
 driven by crontab. The list of triggers is stored in the same database as 
 agileTriggers & getUsage. The triggers are managed via the triggers utility. 
 
-These 4 tools use the agile.py triggers.py config.py and logger.py modules
+These 4 tools use the agileAPI.py agileDB.py agileTools.py triggers.py config.py and 
+logger.py modules
 nd  sqlite3 database.
 
-agile.py drives the database and makes REST API calls to Octopus
+agileDB.py drives the agile_data and agile_rollup tables in the database 
 
-triggers.py drives the database and manages the trigger files
+agileAPI.py makes REST API calls to Octopus
+
+triggersDB.py drives the triggers table in the database and manages the trigger files
+
+agileTools.py contains supporting functions outside each of the classes
 
 config.py processes the .agiletriggers.ini file in the use home directory. This
 file holds configuration variables for the suite of tools. 
 
 logger.py uses python logger to log tracing to  set of logifles for debug information if 
 the debug is turned on in the config file
+
+To set this up you need to install
+
+requests, crontab, json , sqlite3, matplotlib
 
 TO DO:
 

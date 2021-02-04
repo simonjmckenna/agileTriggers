@@ -1,11 +1,42 @@
 h1 {
     border: 2px #eee solid;
-    color: brown;
+    color: red;
+    background-color: gainsboro;
     text-align: center;
-    font-size:large;
+    font-size:200%;
     padding: 10px;
 }
 
+h2 {
+    border: 2px #eee solid;
+    color: gray;
+    text-align: center;
+    font-size:150%;
+    padding: 10px;
+}
+
+h3 {
+    border: 2px #eee solid;
+    color: black;
+    text-align: center;
+    font-size: 120%;
+    padding: 10px;
+}
+
+body {
+    background-color: gainsboro;
+
+}
+
+.submitButton {   
+    padding: 10px 20px;   
+    margin-top: 10px;   
+    background-color: #ddd;   
+    border-radius: 5px;   
+    display: inline-block; 
+} 
+.submitButton:hover {   background-color: #ccc; } 
+.submitButton:active {   background-color: #ddd; } 
 
 #extreme {
      color: white;
@@ -22,7 +53,7 @@ h1 {
     background-color: yellowgreen;
 }
 #good {
-    color: black;
+    color: white;
     background-color: green;
 }
 

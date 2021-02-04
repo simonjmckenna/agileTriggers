@@ -34,14 +34,22 @@ import argparse
 # add_trigger add the trigger to the list of triggers
 ############################################################################
 def  add_trigger(my_triggers, trigger, cost):
-     log.debug("STARTED  add_trigger")
-     if args.trigger == None:
-         print("addtrigger - No trigger name provided")
-         raise sys.exit(1)
+    log.debug("STARTED  add_trigger")
+    if args.trigger == None:
+        print("addtrigger - No trigger name provided")
+        raise sys.exit(1)
 
-     if args.cost == None:
-         print("addtrigger - No trigger cost provided")
-         raise sys.exit(2)
+    if args.cost == None:
+        print("addtrigger - No trigger cost provided")
+        raise sys.exit(2)
+
+    if my_triggers.add_new_trigger(args.trigger,args.cost) == False:
+        print("Failed to update Trigger")
+        result = False
+    else:
+        result = True
+    
+    log.debug("FINISHED add_trigger")
 
 ############################################################################
 # update_trigger update the trigger to the list of triggers
@@ -89,26 +97,28 @@ def  del_trigger(my_triggers, trigger):
 # list_trigger show all/one trigger from the list of triggers
 ############################################################################
 def  list_trigger(my_triggers, trigger_name):
-     log.debug("STARTED  list_trigger")
-     result = False
+    log.debug("STARTED  list_trigger")
+    result = False
 
-     if trigger_name == None:
-         result  = True
+    if trigger_name == None:
+        result  = True
 
-     triggers= my_triggers.get_all_triggers()
+    triggers= my_triggers.get_all_triggers()
+    
+    if triggers != None:
+        if trigger_name == None: 
+            print(f" cost(p)	trigger name")  
+        for trigger in triggers:
+            if trigger_name == None: 
+                print(f"{trigger[1]:0.03f}		{trigger[0]:20s}")  
+            if trigger_name == trigger[0]:
+                print(f"{trigger[1]:0.03f}	{trigger[0]:20s}")  
+                result=True
+    else:
+        print("Failed to list triggers - check database")
+    log.debug("FINISHED list_trigger")
 
-     if trigger_name == None: 
-         print(f" cost(p)	trigger name")  
-     for trigger in triggers:
-         if trigger_name == None: 
-              print(f"{trigger[1]:0.03f}		{trigger[0]:20s}")  
-         if trigger_name == trigger[0]:
-              print(f"{trigger[1]:0.03f}	{trigger[0]:20s}")  
-              result=True
-
-     log.debug("FINISHED list_trigger")
-
-     return result
+    return result
 
 ############################################################################
 #  setup config

@@ -1,44 +1,69 @@
 {% extends 'base.html' %} 
 
 {% block content %}
-     <h1>{% block title %} Welcome to {{app_site_name}} Agile Tracker{% endblock %} </h1>
+     <h1 style="text-align:center">{% block title %}  {{app_site_name}} Octopus Agile Energy Tracker{% endblock %} </h1>
 
-     <table class="center">
-          <tr>
-               <td> Select Year</td>
-               <td> Select Month</td>
-               <td> Select Day</td>
+     <table class="center" width="100%">
+          <tr> 
+               <td></td>
+               <td></td> 
+               <td><h2 style="text-align:center"> Select Date to view </h2></td>
+               <td></td>
+               <td></td>
           </tr>
           <tr>
-               <form class="dateSelection" method="POST" action="/root_form">
-               <td>
+               <td></td>
+               <td></td>
+               <td> <h2 style="text-align:center;">
+                    <form class="dateSelection" method="POST" action="/root_form">
+               
+                         <select name="day_dropdown" method="GET" action="/">
+                              {% for day in day_list %}
+                              <option value= "{{day}}" >{{day}}</option>"
+                              {% endfor %}
+                         </select>
+     
+                    <select name="month_dropdown" method="GET" action="/">
+                         {% for month in month_list %}
+                         <option value="{{month}}", default="{{month}}" >{{month}}</option>"
+                         {% endfor %}
+                    </select>
+     
+                    
                     <select name="year_dropdown" method="GET" action="/">
                          {% for year in year_list %}
                          <option value= "{{year}}" >{{year}}</option>"
                          {% endfor %}
-                     </select>
+                    </select>
+          
+                    <input class=".submitbutton" type="submit" value="submit">
+               
+                    </form>
+                    </h2>
                </td>
-               <td>
-                    <select name="month_dropdown" method="GET" action="/">
-                         {% for month in month_list %}
-                         <option value= "{{month}}" >{{month}}</option>"
-                         {% endfor %}
-                     </select>
-               </td>
-               <td><select name="day_dropdown" method="GET" action="/">
-                    {% for day in day_list %}
-                    <option value= "{{day}}" >{{day}}</option>"
-                    {% endfor %}
-                </select></td>
-                <td>
-                    <input class="btn" type="submit" value="submit">
-                </td>
-               </form>
+               <td></td>
+               <td></td>
           </tr>
           <tr>
-               <td colspan="4">
-                    <img src="{{year}}-{{month}}-{{day}}/plot.png" alt="my plot">
+               <td></td>
+              
+               <td><h2>
+               <a href="/{{prev}}/month">previous month</a>
+               </h2></td>
+              
+               <td><h2>Summary for {{month}}/{{year}}</td></h2></td>
+              
+               <td><h2>
+               <a href="/{{next}}/month">next month</a>
+               </h2></td>
+               <td></td>
+          </tr>
+          <tr>
+               
+               <td colspan="5">
+                    <img src="/{{year}}-{{month}}-{{day}}/plot.png" alt="my plot">
                </td>
+               
           </tr>
      </table>
 {% endblock %}
