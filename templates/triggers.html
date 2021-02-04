@@ -1,0 +1,25 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+     <h1 style="text-align:center">{% block title %}  {{app_site_name}} Octopus Agile Energy Tracker{% endblock %} </h1>
+
+
+<table class="center" width="100%">
+    <tr> 
+        <td colspan=5><h2 style="text-align:center">Active Agile Trigger Table</h2></td>
+   </tr>  
+   <tr>
+        <td colspan=3><h2 style="text-align:center">Trigger Name</h2></td>
+        <td colspan=1><h2 style="text-align:center"> </h2></td>
+        <td colspan=2><h2 style="text-align:center">Trigger Value (pence)</h2></td>
+   </tr>
+    {% for trigger in triggers %}
+    <tr>
+       <td colspan=3 id="{{trigger[0]}}"><h3>{{ trigger[0] }}</h3></td>
+       <td colspan=1></td>
+       <td colspan=2 id="{{trigger[1]}}"><h3>{{ trigger[1] }}</h3></td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %} 
