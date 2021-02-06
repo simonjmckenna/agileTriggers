@@ -25,6 +25,7 @@ from config import configFile
 from agileDB import OctopusAgileDB
 from mylogger import nulLogger, mylogger
 from sqliteDB import sqliteDB
+from agileTools import check_permission
 import sys
 import os
 
@@ -50,6 +51,33 @@ class costTriggers:
             self.log.error("no database file path registered")
         else:
             self.dbobject = sqliteDB(self.database, theLogger)
+
+        self.triggerFolder = theConfig.read_value('filepaths','trigger_folder')
+        permission = theConfig.read_value('filepaths','trigger_folder_permissions')
+
+        permission = check_permission(permission, True)
+
+        if self.triggerFolder == None or permission == None:
+            print ("checkTriggers abandoned execution trigger path missing:")
+            raise sys.exit(1)
+
+        folder_perms= int(f"Oo{permission}")
+
+
+        if os.path.isdir(self.triggerFolder) == False:
+            try:
+                os.mkdir(self.triggerFolder,folder_perms)
+            except OSError as error:
+                print(f"checkTriggers Error - {error}")
+                raise sys.exit(1)
+        else:
+            try:
+                os.chmod(self.triggerFolder,folder_perms)
+            except OSError as error:
+                print(f"checkTriggers Error - {error}")
+                raise sys.exit(1)
+
+
 
         self.log.debug("FINISHED __init__ ")
 
