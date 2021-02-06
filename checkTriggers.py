@@ -23,7 +23,7 @@
 ########################################################################
 
 from config import configFile
-from agileTools import buildFilePath
+from agileTools import buildFilePath,time_now
 from agileDB import OctopusAgileDB
 from agileTriggers import costTriggers
 from mylogger import mylogger
@@ -66,7 +66,7 @@ log = mylogger("checkTriggers",logFile,isdebug,toscreen)
 log.debug("STARTED checkTriggers.py")
 
 log.debug("init Octopus Agile object")
-my_account = OctopusAgileDB(config,log,True)
+my_account = OctopusAgileDB(config,log)
 
 log.debug("init cost Trigger object")
 my_triggers= costTriggers(config,log)
@@ -75,7 +75,7 @@ my_triggers= costTriggers(config,log)
 # Get the current cost. 
 ############################################################################
 log.debug("Query Database for current cost")
-unit_cost = my_account.get_period_cost(my_account.time_now())
+unit_cost = my_account.get_db_period_cost(time_now())
 
 ############################################################################
 # Get the list of triggers
