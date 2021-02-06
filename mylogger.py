@@ -53,6 +53,9 @@ class mylogger:
         else:
             # logging to a file (logdest)
             logging.basicConfig(format=FORMAT,level=LEVEL,filename=logdest) 
+        
+        self.to_screen = to_screen
+
         self.logger.info("New Log Instance Started")
 
 ##############################################################################

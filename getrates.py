@@ -69,11 +69,17 @@ else:
     config=configFile(configPath)
 
 logPath=config.read_value('filepaths','log_folder')
+
+toscreen=config.read_value('settings','agileTrigger_debug2screen')
+if toscreen == None: toscreen = False
+isdebug=config.read_value('settings','agile_triggerdebug')
+if isdebug == None: isdebug = False
+
 day = (datetime.utcnow()).day
 logPath=buildFilePath(logPath,f"getRates_{day:02d}.log")
 
 if logPath != None:
-    log = mylogger("getRates",logPath,True)
+    log = mylogger("getRates",logPath,isdebug,toscreen)
 else:
     print ("getRates abandoned execution log path missing:") 
     raise sys.exit(1)

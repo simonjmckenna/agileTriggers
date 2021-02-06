@@ -26,6 +26,34 @@ import os
 
 yroffset=2020
 
+############################################################################
+#  buildfilepath - build a path to a file expanding path substitutions
+############################################################################
+def buildFilePath(directory,file):
+     path = os.path.expanduser(directory)
+     result = os.path.isdir(path)
+     if result == True:
+         result =  f"{path}/{file}" 
+     return result
+    
+############################################################################
+#  check permission - is file permission valid
+############################################################################
+def check_permission(permission,isdir):
+    dir = 0
+    if isdir: dir = 1
+    result = None
+    if len(permission) == 3:
+        for chr in permission:
+            val = int(chr) - dir
+            if val == -1 or val == 0 or val == 2 or val == 4 or val == 6:
+                result = permission
+            else:
+                result = None
+
+    return result
+
+
 ##############################################################################
 #  builddateobj - take an input string of the format 
 ##############################################################################

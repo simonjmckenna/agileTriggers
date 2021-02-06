@@ -17,6 +17,7 @@
 ########################################################################
 
 from mylogger import mylogger,nulLogger
+from agileTools import buildFilePath
 import sys
 import logging
 import os
@@ -24,40 +25,37 @@ import configparser
 
 CONFIGPATH = "/home/ipace/.agiletrigger.ini"
 
-def buildFilePath(directory,file):
-     path = os.path.expanduser(directory)
-     result = os.path.isdir(path)
-     if result == True:
-         result =  f"{path}/{file}" 
-     return result
-    
+
 class configFile:
     # the logger we use
     log = None
     # the config file
     config = None
+    # The path to the config gile
+    configFilePath = None
 
 ##############################################################################
 #  __init__ class init for configFile class 
 ##############################################################################
     def __init__ (self, configFilePath=None, theLogger=None):
-         # initialise the logfile
-         if theLogger == None:
-             theLogger = nulLogger()
-         self.log = theLogger
-         self.log.debug("STARTED __init__")
+        # initialise the logfile
+        if theLogger == None:
+            theLogger = nulLogger()
+        self.log = theLogger
+        self.log.debug("STARTED __init__")
 
 
-         if configFilePath == None:
-            configFilePath = CONFIGPATH 
+        if configFilePath == None:
+            self.configFilePath = CONFIGPATH 
 
-         if os.path.isfile(configFilePath) == False:
-             configFilePath = None
-             print (f" getRates abandoned execution config file missing:{configPath}")
-         else:
-             self.__load_config_file(configFilePath)
+        if os.path.isfile(configFilePath) == False:
+            print (f" getRates abandoned execution config file missing:{configFilePath}")
+            self.configFilePath = None
 
-         self.log.debug("FINISHED __init__ ")
+        else:
+            self.__load_config_file(configFilePath)
+
+        self.log.debug("FINISHED __init__ ")
 
 ##############################################################################
 #  set_logger  - reset the logger used for this class instance
@@ -95,7 +93,7 @@ class configFile:
             result=None
         except:
             self.log.error("Unexpected error in config file:", sys.exc_info()[0])
-            self.log.error ("file: "+configFilePath)
+            self.log.error (f"file: {self.configFilePath}")
             result=None
 
         if result != None :

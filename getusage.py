@@ -86,7 +86,13 @@ if logPath == None:
 # setup logger
 day = (datetime.utcnow()).day
 logFile=buildFilePath(logPath, f"getUsage_{day}.log")
-log = mylogger("getUsage",logFile,True)
+
+toscreen=config.read_value('settings','agileTrigger_debug2screen')
+if toscreen == None: toscreen = False
+isdebug=config.read_value('settings','agile_triggerdebug')
+if isdebug == None: isdebug = False
+
+log = mylogger("getUsage",logFile,isdebug,toscreen)
 
 log.debug("STARTED getUsage ")
 
@@ -98,7 +104,7 @@ t_periodno = gen_periodno_date(datetime.utcnow())-24
 
 log.debug(f"f_periodno = {f_periodno} t_periodno={t_periodno}")
 
-if t_periodno > f_periodno:
+if  f_periodno != None and t_periodno > f_periodno:
     from_date = date_from_periodno(f_periodno)
     to_date = date_from_periodno(t_periodno)
 

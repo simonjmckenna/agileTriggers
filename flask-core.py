@@ -273,7 +273,6 @@ def get_previous_month(year,month):
     else:
         month = (month-1)
     result=f"{year:04d}-{month:02d}-{day:02d}"
-    print(f"result={result}")
     return result
 ############################################################################
 #  get_next_month get the next month
@@ -286,5 +285,4 @@ def get_next_month(year,month):
     else:
         month = (month+1)
     result=f"{year:04d}-{month:02d}-{day:02d}"
-    print(f"result={result}")
     return result

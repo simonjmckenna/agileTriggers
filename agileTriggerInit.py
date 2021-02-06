@@ -19,8 +19,10 @@
 # limitations under the License.
 ########################################################################
 
-from agileDB import OctopusAgileAB, OctopusAgileDB
-from config import configFile,buildFilePath
+from agileDB import OctopusAgileDB
+from agileTriggers import costTriggers
+from config import configFile
+from agileTools import buildFilePath
 from crontab import CronTab
 from mylogger import mylogger
 import os
@@ -44,9 +46,14 @@ if logPath == None:
     print ("getRates abandoned execution log path missing:")
     raise sys.exit(1)
 
+toscreen=config.read_value('settings','agileTrigger_debug2screen')
+if toscreen == None: toscreen = False
+isdebug=config.read_value('settings','agile_triggerdebug')
+if isdebug == None: isdebug = False
+
 # setup logger
 logFile=buildFilePath(logPath, "agileTriggerInit.log")
-log = mylogger("agileTriggerInit",logFile,True)
+log = mylogger("agileTriggerInit",logFile,isdebug,toscreen)
 
 ############################################################################
 #  Start of execution 
@@ -55,27 +62,18 @@ log.info("STARTED agileTriggerInit.py")
 log.info("init Agile object")
 ratetime=None
 
-ratetine==config.read_value('settings','new_rate_time')
-if ratetime == None:
-    print ("no new_rate_tyime set in config assuming 16:15")
-    cron_hour =16
-    cron_minute = 15
-
 my_account= OctopusAgileDB(config,log)
-
-# cron vairiables
-cron_comment="added by agileTriggerInit"
-cron_command="/usr/bin/python3 "+binPath+"/getrates.py -L 2>&1 > "+logPath+"/cron.log"
-
-log.info("init Agile database")
+log.info("init Agile database and cost/usage tables")
 my_account.initialise_agile_db()
 
-sys.exit()
+log.info("init trigger database tables")
+my_trigger= costTriggers(config,log)
+my_trigger.initialise_trigger_db()
 
-log.info("init crontab entry to refresh database")
+log.info("Opening crontab entries")
 my_cron = CronTab(user=True)
 
-
+cron_comment="added by agileTriggerInit"
 # get list of jobs in crontab with this comment.
 my_jobs = my_cron.find_comment(cron_comment)
 
@@ -86,15 +84,33 @@ for job in my_jobs:
         log.info("deleting: "+str(job))
         my_cron.remove(job)
 
-# create new job Octopus publishes prices @16:05 daily
-log.info("creating new crontab entry")
-my_job = my_cron.new(command=cron_command)
-my_job.minute.on(cron_minute)
-my_job.hour.on(cron_hour)
-my_job.set_comment(cron_comment)
 
+# Initialise the  daily rate pull from octopus
+# cron vairiables
+
+cron_command="/usr/bin/python3 "+binPath+"/getrates.py -L 2>&1 > "+logPath+"/cron.log"
+
+log.info("init new crontab entries to refresh database")
+# create new job Octopus publishes prices @16:05 daily, but take data from config
+log.info("creating new crontab entry")
+my_job1 = my_cron.new(command=cron_command)
+my_job1.minute.on(15)
+my_job1.hour.on(16)
+my_job1.set_comment(cron_comment)
+
+# Initialise the  daily usage pull from octopus
 cron_comment="added by agileTriggerInit"
 cron_command="/usr/bin/python3 "+binPath+"/getusage.py 2>&1 > "+logPath+"/cron.log"
+my_job2 = my_cron.new(command=cron_command)
+my_job2.hour.on(0,6,12,18)
+my_job2.set_comment(cron_comment)
+
+# Initialise the  trigger check every 30 minutes
+cron_comment="added by agileTriggerInit"
+cron_command="/usr/bin/python3 "+binPath+"/checkTriggers.py 2>&1 > "+logPath+"/cron.log"
+my_job3 = my_cron.new(command=cron_command)
+my_job3.minute.on(0,30)
+my_job3.set_comment(cron_comment)
 
 log.info("updating cron entry settings")
 my_cron.write_to_user(user=True)

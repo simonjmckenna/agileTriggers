@@ -22,11 +22,13 @@
 # limitations under the License.
 ########################################################################
 
-from agile import OctopusAgile
-from config import configFile,buildFilePath
+from config import configFile
+from agileTools import buildFilePath
+from agileDB import OctopusAgileDB
 from agileTriggers import costTriggers
 from mylogger import mylogger
 from datetime import datetime
+import sys
 
 ############################################################################
 #  setup config
@@ -50,7 +52,13 @@ if logPath == None:
 # setup logger
 day = (datetime.utcnow()).day
 logFile=buildFilePath(logPath, f"checktriggers_{day:02d}.log")
-log = mylogger("checkTriggers",logFile,True)
+
+toscreen=config.read_value('settings','agileTrigger_debug2screen')
+if toscreen == None: toscreen = False
+isdebug=config.read_value('settings','agile_triggerdebug')
+if isdebug == None: isdebug = False
+
+log = mylogger("checkTriggers",logFile,isdebug,toscreen)
 
 ############################################################################
 #  Start of execution
@@ -58,7 +66,7 @@ log = mylogger("checkTriggers",logFile,True)
 log.debug("STARTED checkTriggers.py")
 
 log.debug("init Octopus Agile object")
-my_account = OctopusAgile(config,log,True)
+my_account = OctopusAgileDB(config,log,True)
 
 log.debug("init cost Trigger object")
 my_triggers= costTriggers(config,log)

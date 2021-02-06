@@ -33,7 +33,8 @@ class costTriggers:
     triggers = None
     database      = None
     triggerFolder = None
-    dbobject       = None
+    triggerPerms  = None
+    dbobject      = None
 
 ##############################################################################
 #  __init__ class init for costTriggers class 
@@ -53,26 +54,26 @@ class costTriggers:
             self.dbobject = sqliteDB(self.database, theLogger)
 
         self.triggerFolder = theConfig.read_value('filepaths','trigger_folder')
-        permission = theConfig.read_value('filepaths','trigger_folder_permissions')
+        perms = theConfig.read_value('filepaths','trigger_permissions')
 
-        permission = check_permission(permission, True)
+        permission = check_permission(perms, True)
 
         if self.triggerFolder == None or permission == None:
             print ("checkTriggers abandoned execution trigger path missing:")
             raise sys.exit(1)
 
-        folder_perms= int(f"Oo{permission}")
+        self.triggerPerms= int(perms,8)
 
 
         if os.path.isdir(self.triggerFolder) == False:
             try:
-                os.mkdir(self.triggerFolder,folder_perms)
+                os.mkdir(self.triggerFolder,self.triggerPerms)
             except OSError as error:
                 print(f"checkTriggers Error - {error}")
                 raise sys.exit(1)
         else:
             try:
-                os.chmod(self.triggerFolder,folder_perms)
+                os.chmod(self.triggerFolder,self.triggerPerms)
             except OSError as error:
                 print(f"checkTriggers Error - {error}")
                 raise sys.exit(1)
@@ -132,12 +133,18 @@ class costTriggers:
 ##############################################################################
     def __start_trigger(self,trigger_name):
         self.log.debug("STARTED  start_trigger ")
+        file=os.path.join(self.triggerFolder,trigger_name)
+        if os.path.exists(file) == False:
+            os.mknod(file,self.triggerPerms)
         self.log.debug("FINISHED start_trigger ")
 ##############################################################################
 #   __stop_trigger -  function to trigger a stop
 ##############################################################################
     def __stop_trigger(self,trigger_name):
         self.log.debug("STARTED  stop_trigger ")
+        file=os.path.join(self.triggerFolder,trigger_name)
+        if os.path.exists(file):
+            os.remove(file)
         self.log.debug("FINISHED stop_trigger ")
 
 ##############################################################################

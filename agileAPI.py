@@ -38,8 +38,6 @@ class OctopusAgileAPI:
 #filepaths
     binFolder     = None
 # settings
-    new_rate_hour = 16
-    new_rate_mins = 10
     app_site_name = None
     agile_debug   = False
     
@@ -97,15 +95,6 @@ class OctopusAgileAPI:
         # Look at default - if not present use defaults
         # Nothing can be set for defaults as yet
         
-        rate_time=[]
-        self.log.debug("STARTED process_config_file: settings")
-        rate_time   = theConfig.read_value('settings', 'new_rate_time')
-        rate_time   = rate_time.split(':')
-        
-        self.new_rate_hour = int(rate_time[0])
-        self.new_rate_mins = int(rate_time[1])
-        
-        self.log.debug (f" time = {self.new_rate_hour:02d}:{self.new_rate_mins:02d}")
         
         self.app_site_name  = theConfig.read_value('settings','app_site_name')
         

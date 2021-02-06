@@ -146,7 +146,13 @@ if logPath == None:
 # setup logger
 day = (datetime.utcnow()).day
 logFile=buildFilePath(logPath, "trigger.log")
-log = mylogger("trigger",logFile,True)
+
+toscreen=config.read_value('settings','agileTrigger_debug2screen')
+if toscreen == None: toscreen = False
+isdebug=config.read_value('settings','agile_triggerdebug')
+if isdebug == None: isdebug = False
+
+log = mylogger("trigger",logFile,isdebug,toscreen)
 
 ############################################################################
 #  Start of execution

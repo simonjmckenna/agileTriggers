@@ -464,9 +464,6 @@ class OctopusAgileDB:
         return result
 
 
-
-                
-        self.log.debug("FINISHED init_db_rollup_month ")
 ##############################################################################
 #  create_db_rollup_period - create a rollup for a period
 ##############################################################################
