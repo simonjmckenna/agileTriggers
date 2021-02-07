@@ -92,7 +92,7 @@ class configFile:
             self.log.error("Could not process data.")
             result=None
         except:
-            self.log.error("Unexpected error in config file:", sys.exc_info()[0])
+            self.log.error(f"Unexpected error in config file: {sys.exc_info()[0]}")
             self.log.error (f"file: {self.configFilePath}")
             result=None
 
