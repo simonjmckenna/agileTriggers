@@ -35,6 +35,7 @@ import argparse
 #  load_rate_data - load the rate data into the database
 ##############################################################################
 def load_rate_data(agileDB,rate_data):
+    global log
     log.debug("STARTED load_rate_data ")
     result = -1
     record = 0
@@ -72,8 +73,11 @@ logPath=config.read_value('filepaths','log_folder')
 
 toscreen=config.read_value('settings','agileTrigger_debug2screen')
 if toscreen == None: toscreen = False
+else: toscreen=True
+
 isdebug=config.read_value('settings','agile_triggerdebug')
 if isdebug == None: isdebug = False
+else: isdebug = True
 
 day = (datetime.utcnow()).day
 logPath=buildFilePath(logPath,f"getRates_{day:02d}.log")

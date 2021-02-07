@@ -148,6 +148,19 @@ class costTriggers:
         self.log.debug("FINISHED stop_trigger ")
 
 ##############################################################################
+#   is triggered -  function to trigger a stop
+##############################################################################
+    def is_triggered(self,trigger_name):
+        result = False
+        self.log.debug("STARTED  is_triggered ")
+        file=os.path.join(self.triggerFolder,trigger_name)
+        if os.path.exists(file):
+            result = True
+        self.log.debug(f"FINISHED is_triggered  status {result}")
+        return result
+
+
+##############################################################################
 #   process_triggers -  process all the triggers against a cost trigger
 ##############################################################################
     def process_triggers(self,triggers,trigger_cost):

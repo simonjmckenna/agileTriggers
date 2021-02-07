@@ -149,8 +149,11 @@ logFile=buildFilePath(logPath, "trigger.log")
 
 toscreen=config.read_value('settings','agileTrigger_debug2screen')
 if toscreen == None: toscreen = False
+else: toscreen=True
+
 isdebug=config.read_value('settings','agile_triggerdebug')
 if isdebug == None: isdebug = False
+else: isdebug = True
 
 log = mylogger("trigger",logFile,isdebug,toscreen)
 

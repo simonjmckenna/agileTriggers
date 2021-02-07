@@ -50,7 +50,16 @@ if logPath == None:
 
 day = (datetime.utcnow()).day
 logFile=buildFilePath(logPath, f"webapp_{day:02d}.log")
-log = mylogger("webapp",logFile,True)   
+
+toscreen=config.read_value('settings','agileTrigger_debug2screen')
+if toscreen == None: toscreen = False
+else: toscreen=True
+
+isdebug=config.read_value('settings','agile_triggerdebug')
+if isdebug == None: isdebug = False
+else: isdebug = True
+
+log = mylogger("webapp",logFile,isdebug,toscreen)   
 
 ############################################################################
 # Create the Octopus Agile Object
@@ -64,6 +73,7 @@ log.debug("Completed init of my_database")
 ############################################################################
 @app.route('/triggers/manage', methods=["GET"])
 def manage_triggers():
+    global log
     triggers=[]
     log.debug("STARTED webapp manage_triggers()")
 
@@ -88,6 +98,7 @@ def manage_triggers():
 ############################################################################
 @app.route('/<int:year>-<int:month>-<int:day>/month', methods=["GET"])
 def show_month(year,month,day):
+    global log
     log.debug("STARTED webapp show_month()")
     year_list=[]
     month_list=["01","02","03","04","05","06","07","08","09","10","11","12"]
@@ -106,6 +117,7 @@ def show_month(year,month,day):
 ############################################################################
 @app.route('/', methods=["GET"])
 def index():
+    global log
     log.debug("STARTED webapp index()")
 
     td = datetime.utcnow()
@@ -121,6 +133,7 @@ def index():
 ############################################################################
 @app.route('/about', methods=["GET"])
 def show_about():
+    global log
     log.debug("STARTED webapp show_about()")
     log.debug("FINISHED webapp show_about()")
     return render_template('about.html',app_site_name=app_site_name)
@@ -130,6 +143,7 @@ def show_about():
 ############################################################################
 @app.route('/root_form', methods=["POST"])
 def root_form():
+    global log
     log.debug("STARTED webapp root_form()")
     year = request.form.get("year_dropdown")
     month= request.form.get("month_dropdown")
@@ -143,6 +157,7 @@ def root_form():
 ############################################################################
 @app.route('/today', methods=["GET"])
 def show_today():
+    global log
     log.debug("STARTED webapp show_today()")
     
     today=datetime.utcnow()
@@ -159,6 +174,7 @@ def show_today():
 ############################################################################
 @app.route('/<int:year>-<int:month>-<int:day>/data', methods=["GET"])
 def show_day(year,month,day):
+    global log
     log.debug("STARTED webapp show_day()")
     
     octopus_data = my_database.get_db_period_data(year,month,day)
@@ -204,6 +220,7 @@ def get_next_day(year,month,day):
 
 @app.route('/<int:year>-<int:month>-<int:day>/plot.png', methods=["GET"])
 def plot_png(year,month,day):
+    global log
     log.debug(f"STARTED webapp plot_png({year},{month},{day})")
     fig = create_figure(year,month,day)
     log.debug("one")
@@ -215,6 +232,7 @@ def plot_png(year,month,day):
     return Response(output.getvalue(), mimetype='image/png')
 
 def create_figure(year,month,day):
+    global log
     log.debug(f"STARTED webapp create_figure({year},{month},{day})")
     daysinmonth = calendar.monthrange(year,month)[1]
     x_days = range(daysinmonth)

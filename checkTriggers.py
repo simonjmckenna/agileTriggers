@@ -27,8 +27,89 @@ from agileTools import buildFilePath,time_now
 from agileDB import OctopusAgileDB
 from agileTriggers import costTriggers
 from mylogger import mylogger
-from datetime import datetime
+from datetime import datetime,timedelta
+import signal
+import time
 import sys
+import os
+
+############################################################################
+# Global variable that controls the trigger loop
+############################################################################
+trigger_continue_loop = True
+
+############################################################################
+# Signal Handler for termination signals - set the loop vairable to False
+############################################################################
+def signal_handler(s,f):
+    global trigger_continue_loop
+    trigger_continue_loop = False
+    log.info(f"recieved signal {s} terminating loop")
+    raise Exception("Signal Exception")
+
+
+############################################################################
+# main function - sit here forever 
+############################################################################
+def check_trigger_main(my_account,my_triggers):
+    global trigger_continue_loop
+    global log
+    unit_cost = None
+    trigger_list = None
+    result = None
+    tgt_minutes = 0
+    tgt_seconds = 15
+
+    log.debug("Started check_trigger_main")
+
+    # Setup the signal handler 
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    try:
+        while trigger_continue_loop == True:
+
+            t_now = datetime.utcnow()
+            log.info(f" Trigger Check started {t_now}")
+
+            # Get the current cost. 
+            log.debug("Query Database for current cost")
+            unit_cost = my_account.get_db_period_cost(time_now())
+
+            # Get the list of triggers
+            log.debug("Query Database for triggers")
+
+            trigger_list=my_triggers.get_all_triggers()
+
+            # iterate the list of triggers  creating or deleting file as necessary
+            log.debug(" calling process triggers")
+
+            result = my_triggers.process_triggers(trigger_list, unit_cost)
+            
+            # find the time now in preperation for going to sleep
+            t_now = datetime.utcnow()
+            log.info(f" Trigger Check completed {t_now}")
+
+            #figure out the minutes offset for the next period
+            if t_now.minute >= 30:
+                tgt_minutes = 0
+            else:
+                tgt_minutes = 30
+
+            # We are going to sleep for 30 minutes
+            t_future = t_now + timedelta(minutes=30)
+            # Set the desired future time to be on the half hour (plus 15 seconds)  
+            t_future = t_future.replace(minute=tgt_minutes, second=tgt_seconds)
+            # less the time we have been processing (in seconds)
+            seconds = (t_future - t_now).seconds
+
+            # Sleep
+            log.info(f" Sleeping until  {t_future} in {seconds} seconds")
+            time.sleep(seconds)
+        # End of Loop
+    except:
+        log.info("check_trigger_main loop terminated due to exception")
+
+    log.debug("FINISHED check_trigger_main")
 
 ############################################################################
 #  setup config
@@ -49,15 +130,20 @@ if logPath == None:
     print ("checkTriggers abandoned execution log path missing:")
     raise sys.exit(1)
 
-# setup logger
+# setup logfile name
 day = (datetime.utcnow()).day
 logFile=buildFilePath(logPath, f"checktriggers_{day:02d}.log")
 
+#read parameters
 toscreen=config.read_value('settings','agileTrigger_debug2screen')
-if toscreen == None: toscreen = False
-isdebug=config.read_value('settings','agile_triggerdebug')
-if isdebug == None: isdebug = False
+if toscreen == None: toscreen = False 
+else: toscreen = True
 
+isdebug=config.read_value('settings','agileTrigger_debug')
+if isdebug == None: isdebug = False
+else: isdebug = True
+
+# initialise the logger
 log = mylogger("checkTriggers",logFile,isdebug,toscreen)
 
 ############################################################################
@@ -65,29 +151,16 @@ log = mylogger("checkTriggers",logFile,isdebug,toscreen)
 ############################################################################
 log.debug("STARTED checkTriggers.py")
 
+# create agile DB object
 log.debug("init Octopus Agile object")
 my_account = OctopusAgileDB(config,log)
 
+# create cost trigger object
 log.debug("init cost Trigger object")
 my_triggers= costTriggers(config,log)
-
 ############################################################################
-# Get the current cost. 
+#  ruh main routine
 ############################################################################
-log.debug("Query Database for current cost")
-unit_cost = my_account.get_db_period_cost(time_now())
-
-############################################################################
-# Get the list of triggers
-############################################################################
-log.debug("Query Database for triggers")
-
-trigger_list=my_triggers.get_all_triggers()
-############################################################################
-# iterate the list of triggers  creating or deleting file as necessary
-############################################################################
-log.info(" calling process triggers")
-
-result = my_triggers.process_triggers(trigger_list, unit_cost)
+result = check_trigger_main(my_account,my_triggers)
 
 log.debug("FINISHED checkTriggers.py")
